@@ -29,7 +29,7 @@ export default function Progress() {
       {/* Заголовок */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#1a1a1a]">
-          Здравствуйте, Полина!
+          Здравствуйте, Имя Пользователя!
         </h1>
         <p className="text-gray-500 mt-1">
           Вы делаете важную работу. Каждый разговор — это шаг к более сильной команде.
@@ -49,6 +49,7 @@ export default function Progress() {
           </div>
           <p className="text-3xl font-bold text-[#1a1a1a]">12</p>
           <p className="text-sm text-green-600 mt-1">↑ +3 за последнюю неделю</p>
+          /* Менять!*/
         </div>
 
         {/* Карточка 2 */}
@@ -61,6 +62,7 @@ export default function Progress() {
           </div>
           <p className="text-3xl font-bold text-[#1a1a1a]">7.6/10</p>
           <p className="text-sm text-green-600 mt-1">↑ +0.4 за последнюю неделю</p>
+          /* Менять!*/
         </div>
 
         {/* Карточка 3 */}
