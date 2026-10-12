@@ -5,6 +5,8 @@ import authBg from '../assets/auth-bg.png'
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   return (
     <div className="min-h-screen w-full flex bg-[#0d0d0d]">
@@ -24,7 +26,7 @@ export default function Register() {
 
           {/* Логотип */}
           <div className="flex items-center gap-3 mb-12">
-            <img src={logo} alt="Replio" className="h-15 w-auto" />
+            <img src={logo} alt="Replio" className="h-16 w-auto" />
           </div>
 
           <h1 className="text-3xl font-bold text-[#1a1a1a] mb-8">
@@ -37,6 +39,8 @@ export default function Register() {
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email"
                 className="w-full pl-12 pr-4 py-3.5 rounded-full bg-[#e8e4f0] border-none outline-none text-[#1a1a1a] placeholder:text-gray-500 focus:ring-2 focus:ring-purple-300 transition"
               />
@@ -49,6 +53,8 @@ export default function Register() {
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a password"
                 className="w-full pl-12 pr-12 py-3.5 rounded-full bg-[#e8e4f0] border-none outline-none text-[#1a1a1a] placeholder:text-gray-500 focus:ring-2 focus:ring-purple-300 transition"
               />
