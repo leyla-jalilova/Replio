@@ -1,6 +1,41 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import progress
+
+from app import models
+from app.database import Base, engine, SessionLocal
+from app.routers import progress, scenarios
+
+# Создаём таблицы в базе, если их ещё нет
+Base.metadata.create_all(bind=engine)
+
+
+def seed_scenarios():
+    # Заполняем сценарии при первом запуске
+    db = SessionLocal()
+    if db.query(models.Scenario).count() == 0:
+        db.add_all([
+            models.Scenario(
+                title="Обратная связь",
+                description="Сотрудник сдал проект с ошибками. Нужно дать ему обратную связь, не демотивировав.",
+            ),
+            models.Scenario(
+                title="Конфликт",
+                description="Двое коллег поссорились из-за распределения задач. Нужно помочь им договориться.",
+            ),
+            models.Scenario(
+                title="Демотивация",
+                description="Сильный сотрудник потерял интерес к работе. Нужно выяснить причину.",
+            ),
+            models.Scenario(
+                title="Увольнение",
+                description="Нужно сообщить сотруднику об увольнении спокойно и уважительно.",
+            ),
+        ])
+        db.commit()
+    db.close()
+
+
+seed_scenarios()
 
 app = FastAPI(title="Replio API")
 
@@ -19,3 +54,4 @@ def health():
 
 
 app.include_router(progress.router)
+app.include_router(scenarios.router)
