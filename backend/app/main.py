@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models
 from app.database import Base, engine, SessionLocal
-from app.routers import progress, scenarios, auth
+from app.routers import progress, scenarios, auth, ai_test, chat
 
 # Создаём таблицы в базе, если их ещё нет
 Base.metadata.create_all(bind=engine)
@@ -56,3 +56,5 @@ def health():
 app.include_router(progress.router)
 app.include_router(scenarios.router)
 app.include_router(auth.router)
+app.include_router(ai_test.router)
+app.include_router(chat.router)
