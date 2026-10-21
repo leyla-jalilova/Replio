@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -5,7 +6,7 @@ from sqlalchemy.orm import Session
 from app import models
 from app.database import get_db
 from app.deps import get_current_user
-from app.services.ai import ask_ai, build_system_prompt
+from app.services.ai import ask_ai, build_system_prompt, evaluate_conversation
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -84,3 +85,35 @@ def get_chat(
         "scenario": chat.scenario.title,
         "messages": [{"role": m.role, "content": m.content} for m in chat.messages],
     }
+
+
+@router.post("/sessions/{session_id}/finish")
+def finish_chat(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Завершает разговор: ИИ-тренер оценивает его, результат сохраняется
+    chat = get_own_session(session_id, user, db)
+    if not chat.messages:
+        raise HTTPException(status_code=400, detail="Разговор пустой, сначала напишите сообщения")
+
+    already = db.query(models.Attempt).filter(models.Attempt.session_id == chat.id).first()
+    if already:
+        raise HTTPException(status_code=400, detail="Этот разговор уже оценён")
+
+    try:
+        result = evaluate_conversation(chat.scenario, chat.messages)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Ошибка оценки: {e}")
+
+    attempt = models.Attempt(
+        user_id=user.id,
+        scenario_id=chat.scenario_id,
+        session_id=chat.id,
+        score=result["score"],
+        feedback=json.dumps(result, ensure_ascii=False),
+    )
+    db.add(attempt)
+    db.commit()
+    return result
