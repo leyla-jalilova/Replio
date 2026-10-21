@@ -13,3 +13,15 @@ class UserOut(BaseModel):
 
     id: int
     email: str
+
+
+class LoginData(BaseModel):
+    # Что присылает сайт при входе
+    email: str
+    password: str
+
+
+class Token(BaseModel):
+    # Что сервер отвечает при успешном входе
+    access_token: str
+    token_type: str = "bearer"
