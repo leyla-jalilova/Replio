@@ -1,20 +1,39 @@
-// Заглушка. Когда появится бэк — заменить тело функции на fetch.
+// Достаёт понятный текст ошибки из ответа сервера
+async function errorMessage(res, fallback) {
+  const data = await res.json().catch(() => ({}))
+  return typeof data.detail === 'string' ? data.detail : fallback
+}
+
+export async function loginUser({ email, password }) {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  if (!res.ok) throw new Error(await errorMessage(res, 'Ошибка входа'))
+
+  const data = await res.json()
+  // Сохраняем токен в браузере, чтобы прикладывать его к запросам
+  localStorage.setItem('token', data.access_token)
+  return data
+}
+
 export async function registerUser({ email, password }) {
-  // Имитация задержки сети, чтобы loading успел показаться
-  await new Promise((resolve) => setTimeout(resolve, 500))
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  if (!res.ok) throw new Error(await errorMessage(res, 'Ошибка регистрации'))
 
-  // Пока бэка нет — просто логируем и возвращаем фейковый ответ
-  console.log('Регистрация (заглушка):', { email, password })
-  return { token: 'fake-token', user: { email } }
+  // После регистрации сразу входим, чтобы получить токен
+  return loginUser({ email, password })
+}
 
-  // const res = await fetch('/api/register', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ email, password }),
-  // })
-  // if (!res.ok) {
-  //   const data = await res.json()
-  //   throw new Error(data.message || 'Ошибка регистрации')
-  // }
-  // return res.json()
+export function getToken() {
+  return localStorage.getItem('token')
+}
+
+export function logout() {
+  localStorage.removeItem('token')
 }

@@ -3,4 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // Все запросы /api/... пересылаем на бэкенд
+    proxy: {
+      '/api': 'http://127.0.0.1:8000',
+    },
+  },
 })
