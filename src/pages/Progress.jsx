@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
+import { getMe, getSavedEmail } from '../api/auth'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 import { Calendar, Star, AlertTriangle } from 'lucide-react'
 import { getProgressData } from '../api/progress'
+
+function nameFromEmail(email) {
+  if (!email) return 'Пользователь'
+  return email.split('@')[0]
+}
 
 // Цвет плашки с оценкой
 function scoreColor(score) {
@@ -22,6 +28,15 @@ function averageChangeText(value) {
 export default function Progress() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [name, setName] = useState(() => nameFromEmail(getSavedEmail()))
+
+  useEffect(() => {
+    getMe()
+      .then((user) => {
+        if (user?.email) setName(nameFromEmail(user.email))
+      })
+      .catch(() => {})
+  }, [])
 
   // При открытии страницы загружаем прогресс с сервера
   useEffect(() => {
@@ -40,7 +55,7 @@ export default function Progress() {
       {/* Заголовок */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#1a1a1a]">
-          Здравствуйте, Имя Пользователя!
+          Здравствуйте, {name}!
         </h1>
         <p className="text-gray-500 mt-1">
           Вы делаете важную работу. Каждый разговор — это шаг к более сильной команде.
