@@ -49,7 +49,7 @@ export default function Progress() {
           </div>
           <p className="text-3xl font-bold text-[#1a1a1a]">12</p>
           <p className="text-sm text-green-600 mt-1">↑ +3 за последнюю неделю</p>
-          /* Менять!*/
+          {/* Менять!*/}
         </div>
 
         {/* Карточка 2 */}
@@ -62,7 +62,7 @@ export default function Progress() {
           </div>
           <p className="text-3xl font-bold text-[#1a1a1a]">7.6/10</p>
           <p className="text-sm text-green-600 mt-1">↑ +0.4 за последнюю неделю</p>
-          /* Менять!*/
+          {/* Менять!*/}
         </div>
 
         {/* Карточка 3 */}

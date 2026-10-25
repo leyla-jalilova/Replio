@@ -12,7 +12,7 @@ export default function Home() {
 
       {/* Приветствие */}
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-10 text-center">
-        Добро Пожаловать, Полина
+        Добро Пожаловать, Имя Пользователя
       </h1>
 
       {/* Две карточки */}

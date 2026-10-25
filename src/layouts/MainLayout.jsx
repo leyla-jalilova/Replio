@@ -56,7 +56,7 @@ export default function MainLayout() {
               <User className="w-5 h-5 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#1a1a1a]">Дежинская Полина</p>
+              <p className="text-sm font-medium text-[#1a1a1a]">Имя Пользователя</p>
               <p className="text-xs text-gray-500">Руководитель</p>
             </div>
           </div>
