@@ -55,8 +55,15 @@ export default function Scenarios() {
   if (loading) return <div className="p-8 text-gray-500">Загрузка...</div>
 
   return (
-    <div className="p-8">
-      <div className="max-w-xl space-y-6">
+      <div className="relative min-h-full py-10 px-6 flex justify-center overflow-hidden">
+
+            {/* Левый узор */}
+            <div className="hidden lg:block absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 pointer-events-none"></div>
+
+            {/* Правый узор */}
+            <div className="hidden lg:block absolute bottom-20 right-10 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none"></div>
+
+    <div className="w-full max-w-2xl space-y-6 relative z-10">
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
