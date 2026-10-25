@@ -1,10 +1,20 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-# База — это файл replio.db в папке backend
-DATABASE_URL = "sqlite:///./replio.db"
+from app.config import DATABASE_URL
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+url = DATABASE_URL
+# Neon и другие сервисы дают адрес вида postgresql://...
+# SQLAlchemy нужно указать, через какую библиотеку подключаться
+if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql+psycopg://", 1)
+elif url.startswith("postgresql://"):
+    url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+# Эта настройка нужна только для SQLite
+connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
+
+engine = create_engine(url, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine)
 
 
