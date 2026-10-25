@@ -2,7 +2,7 @@ import { getToken } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
-async function request(path, options = {}, fallback = 'Что-то пошло не так') {
+export async function request(path, options = {}, fallback = 'Что-то пошло не так') {
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
@@ -40,4 +40,12 @@ export function startChat(scenarioId) {
     { method: 'POST', body: JSON.stringify({ scenario_id: scenarioId }) },
     'Не удалось начать разговор'
   )
+}
+
+// Выбирает случайный сценарий и сразу создаёт разговор
+export async function startRandomChat() {
+  const list = await getScenarios()
+  if (!list || list.length === 0) throw new Error('Нет доступных сценариев')
+  const random = list[Math.floor(Math.random() * list.length)]
+  return startChat(random.id)
 }

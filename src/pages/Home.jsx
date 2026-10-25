@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PenLine, Users } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { getMe } from '../api/auth'
+import { startRandomChat } from '../api/scenarios'
 
 function nameFromEmail(email) {
   if (!email) return 'Пользователь'
@@ -9,7 +11,9 @@ function nameFromEmail(email) {
 }
 
 export default function Home() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     getMe()
@@ -18,6 +22,17 @@ export default function Home() {
       })
       .catch(() => setName('Пользователь'))
   }, [])
+
+  // Выбирает случайный сценарий, создаёт разговор и открывает диалог
+  const handleRandom = async () => {
+    try {
+      setError('')
+      const session = await startRandomChat()
+      if (session) navigate(`/chat/${session.session_id}`)
+    } catch (e) {
+      setError(e.message)
+    }
+  }
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-8">
@@ -35,8 +50,11 @@ export default function Home() {
       {/* Две карточки */}
       <div className="flex gap-6 flex-wrap justify-center">
 
-        {/* Карточка 1 */}
-        <div className="bg-white rounded-2xl p-6 w-72 shadow-sm hover:shadow-md transition cursor-pointer">
+        {/* Карточка 1: ведёт на страницу сценариев */}
+        <div
+          onClick={() => navigate('/scenarios')}
+          className="bg-white rounded-2xl p-6 w-72 shadow-sm hover:shadow-md transition cursor-pointer"
+        >
           <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
             <PenLine className="w-5 h-5 text-purple-600" />
           </div>
@@ -48,8 +66,11 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Карточка 2 */}
-        <div className="bg-white rounded-2xl p-6 w-72 shadow-sm hover:shadow-md transition cursor-pointer">
+        {/* Карточка 2: случайный сценарий сразу открывает диалог */}
+        <div
+          onClick={handleRandom}
+          className="bg-white rounded-2xl p-6 w-72 shadow-sm hover:shadow-md transition cursor-pointer"
+        >
           <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
             <Users className="w-5 h-5 text-purple-600" />
           </div>
@@ -62,6 +83,9 @@ export default function Home() {
         </div>
 
       </div>
+
+      {/* Ошибка, если не удалось начать разговор */}
+      {error && <p className="text-red-500 text-sm mt-6">{error}</p>}
     </div>
   )
 }
