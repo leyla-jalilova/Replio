@@ -30,12 +30,13 @@ class Attempt(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     scenario_id: Mapped[int] = mapped_column(ForeignKey("scenarios.id"))
+    session_id: Mapped[int | None] = mapped_column(ForeignKey("chat_sessions.id"))
     score: Mapped[float]
+    feedback: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     user: Mapped["User"] = relationship(back_populates="attempts")
     scenario: Mapped["Scenario"] = relationship()
-
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"
