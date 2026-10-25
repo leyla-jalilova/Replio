@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   Target,
@@ -8,6 +9,12 @@ import {
   User
 } from 'lucide-react'
 import logo from '../assets/logo.png'
+import { getMe, getSavedEmail } from '../api/auth'
+
+function nameFromEmail(email) {
+  if (!email) return 'Пользователь'
+  return email.split('@')[0]
+}
 
 const menuItems = [
   { to: '/progress', icon: Target, label: 'Прогресс' },
@@ -18,6 +25,16 @@ const menuItems = [
 ]
 
 export default function MainLayout() {
+  const [name, setName] = useState(() => nameFromEmail(getSavedEmail()))
+
+  useEffect(() => {
+    getMe()
+      .then((user) => {
+        if (user?.email) setName(nameFromEmail(user.email))
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="min-h-screen flex bg-[#f0f0f0]">
 
@@ -56,7 +73,7 @@ export default function MainLayout() {
               <User className="w-5 h-5 text-gray-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#1a1a1a]">Имя Пользователя</p>
+              <p className="text-sm font-medium text-[#1a1a1a]">{name}</p>
               <p className="text-xs text-gray-500">Руководитель</p>
             </div>
           </div>

@@ -1,7 +1,24 @@
+import { useEffect, useState } from 'react'
 import { PenLine, Users } from 'lucide-react'
 import logo from '../assets/logo.png'
+import { getMe } from '../api/auth'
+
+function nameFromEmail(email) {
+  if (!email) return 'Пользователь'
+  return email.split('@')[0]
+}
 
 export default function Home() {
+  const [name, setName] = useState('')
+
+  useEffect(() => {
+    getMe()
+      .then((user) => {
+        if (user) setName(nameFromEmail(user.email))
+      })
+      .catch(() => setName('Пользователь'))
+  }, [])
+
   return (
     <div className="h-full flex flex-col items-center justify-center p-8">
 
@@ -12,7 +29,7 @@ export default function Home() {
 
       {/* Приветствие */}
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-10 text-center">
-        Добро Пожаловать, Имя Пользователя
+        Добро Пожаловать, {name || '...'}
       </h1>
 
       {/* Две карточки */}

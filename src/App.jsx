@@ -5,6 +5,8 @@ import MainLayout from './layouts/MainLayout'
 import Home from './pages/Home'
 import Progress from './pages/Progress'
 import ComingSoon from './pages/ComingSoon'
+import Scenarios from './pages/Scenarios'
+
 
 function App() {
   return (
@@ -18,7 +20,8 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/progress" element={<Progress />} />
-          <Route path="/scenarios" element={<ComingSoon />} />
+          <Route path="/scenarios" element={<Scenarios />} />
+          <Route path="/chat/:id" element={<ComingSoon />} />
           <Route path="/recommendations" element={<ComingSoon />} />
           <Route path="/library" element={<ComingSoon />} />
           <Route path="/settings" element={<ComingSoon />} />
