@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import models
+from app.config import FRONTEND_URL
 from app.database import Base, engine, SessionLocal
 from app.routers import progress, scenarios, auth, ai_test, chat
 
@@ -39,10 +40,14 @@ seed_scenarios()
 
 app = FastAPI(title="Replio API")
 
-# разрешаем фронту на React обращаться к серверу
+# разрешаем сайту обращаться к серверу: локально и в интернете
+origins = ["http://localhost:5173", "http://localhost:3000"]
+if FRONTEND_URL:
+    origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
