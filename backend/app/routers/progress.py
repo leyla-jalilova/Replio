@@ -1,29 +1,79 @@
-from fastapi import APIRouter
+from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app import models
+from app.database import get_db
+from app.deps import get_current_user
 
 router = APIRouter(prefix="/api/progress", tags=["progress"])
 
+MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн",
+          "июл", "авг", "сен", "окт", "ноя", "дек"]
+
+
+def short_date(d: datetime) -> str:
+    # 21 окт
+    return f"{d.day} {MONTHS[d.month - 1]}"
+
+
+def full_date(d: datetime) -> str:
+    # 21 окт 2026
+    return f"{d.day} {MONTHS[d.month - 1]} {d.year}"
+
+
+def average(scores: list[float]) -> float:
+    return round(sum(scores) / len(scores), 1) if scores else 0
+
 
 @router.get("")
-def get_progress():
-    # Пока тестовые данные. Потом будем брать их из базы данных.
+def get_progress(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Все попытки этого пользователя, от старых к новым
+    attempts = (
+        db.query(models.Attempt)
+        .filter(models.Attempt.user_id == user.id)
+        .order_by(models.Attempt.created_at)
+        .all()
+    )
+
+    # Делим на «за последнюю неделю» и «раньше»
+    week_ago = datetime.now() - timedelta(days=7)
+    this_week = [a for a in attempts if a.created_at >= week_ago]
+    earlier = [a for a in attempts if a.created_at < week_ago]
+
+    if this_week and earlier:
+        average_change = round(
+            average([a.score for a in this_week]) - average([a.score for a in earlier]), 1
+        )
+    else:
+        average_change = 0
+
+    # Средний балл по каждому сценарию, чтобы найти слабые места
+    by_scenario: dict[str, list[float]] = {}
+    for a in attempts:
+        by_scenario.setdefault(a.scenario.title, []).append(a.score)
+    weak = [title for title, scores in by_scenario.items() if average(scores) < 7]
+    attention = [title for title, scores in by_scenario.items() if average(scores) < 5]
+
     return {
         "stats": {
-            "completedScenarios": 12,
-            "completedChange": 3,
-            "averageScore": 7.6,
-            "averageChange": 0.4,
-            "weakPoints": 2,
-            "weakPointsAttention": 1,
+            "completedScenarios": len(attempts),
+            "completedChange": len(this_week),
+            "averageScore": average([a.score for a in attempts]),
+            "averageChange": average_change,
+            "weakPoints": len(weak),
+            "weakPointsAttention": len(attention),
         },
         "chartData": [
-            {"date": "1 апр", "score": 4},
-            {"date": "8 апр", "score": 6.5},
-            {"date": "15 апр", "score": 7.2},
-            {"date": "22 апр", "score": 8.5},
+            {"date": short_date(a.created_at), "score": a.score} for a in attempts
         ],
         "recentAttempts": [
-            {"date": "12 апр 2025", "scenario": "Обратная связь", "score": 7},
-            {"date": "8 апр 2025", "scenario": "Конфликт", "score": 8},
-            {"date": "29 мар 2025", "scenario": "Демотивация", "score": 6},
+            {"date": full_date(a.created_at), "scenario": a.scenario.title, "score": a.score}
+            for a in reversed(attempts[-5:])
         ],
+        "weakScenarios": weak,
     }
