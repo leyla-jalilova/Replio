@@ -53,7 +53,7 @@ export default function Register() {
 
     if (Object.keys(validationErrors).length > 0) return
 
-    // 2. Отправляем (пока — заглушка)
+    // 2. Отправляем на сервер
     try {
       setLoading(true)
       await registerUser({ email, password })
@@ -184,7 +184,7 @@ export default function Register() {
           {/* Ссылка внизу */}
           <p className="text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <a href="#" className="text-[#1a1a1a] font-semibold hover:underline">
+            <a href="/login" className="text-[#1a1a1a] font-semibold hover:underline">
               Sign in
             </a>
           </p>
