@@ -12,6 +12,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(String(100), default="", server_default="")
 
     attempts: Mapped[list["Attempt"]] = relationship(back_populates="user")
 
