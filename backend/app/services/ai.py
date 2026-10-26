@@ -1,28 +1,46 @@
 import json
+import time
+
 from openai import OpenAI
 
-from app.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
-
-# Клиент для OpenRouter (он понимает тот же формат, что и OpenAI)
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
+from app.config import (
+    FALLBACK_API_KEY,
+    FALLBACK_BASE_URL,
+    FALLBACK_MODEL,
+    OPENROUTER_API_KEY,
+    OPENROUTER_MODEL,
 )
 
-# Можно указать несколько моделей через запятую: если первая занята,
-# OpenRouter сам попробует следующую
-MODELS = [m.strip() for m in OPENROUTER_MODEL.split(",") if m.strip()]
+# Список вариантов «сервис + модель», которые пробуем по очереди
+PROVIDERS = []
+
+openrouter = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_API_KEY)
+for model in OPENROUTER_MODEL.split(","):
+    if model.strip():
+        PROVIDERS.append((openrouter, model.strip()))
+
+# Запасной сервис (Cloudflare), если он настроен
+if FALLBACK_API_KEY and FALLBACK_BASE_URL and FALLBACK_MODEL:
+    fallback = OpenAI(base_url=FALLBACK_BASE_URL, api_key=FALLBACK_API_KEY)
+    PROVIDERS.append((fallback, FALLBACK_MODEL))
 
 
 def ask_ai(messages: list[dict]) -> str:
-    # Отправляет историю сообщений в нейросеть и возвращает её ответ
-    extra = {"models": MODELS} if len(MODELS) > 1 else None
-    response = client.chat.completions.create(
-        model=MODELS[0],
-        messages=messages,
-        extra_body=extra,
-    )
-    return response.choices[0].message.content
+    # Пробуем модели по очереди: если одна занята (429) или упала, берём следующую.
+    # Если не ответила ни одна, ждём пару секунд и пробуем всё ещё раз.
+    last_error = None
+    for attempt in range(2):
+        for client, model in PROVIDERS:
+            try:
+                response = client.chat.completions.create(model=model, messages=messages)
+                answer = response.choices[0].message.content
+                if answer:
+                    return answer
+            except Exception as e:
+                last_error = e
+                print(f"Модель {model} не ответила: {e}")
+        time.sleep(2)
+    raise RuntimeError(f"Все модели недоступны: {last_error}")
 
 
 def build_system_prompt(scenario) -> str:

@@ -18,7 +18,11 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Пользователь с таким email уже есть")
 
     # Создаём пользователя с зашифрованным паролем
-    user = models.User(email=data.email, password_hash=hash_password(data.password))
+    user = models.User(
+        email=data.email,
+        name=data.name.strip(),
+        password_hash=hash_password(data.password),
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
