@@ -2,7 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserCreate(BaseModel):
-    # Что присылает сайт при регистрации
+    # Что присылает сайт при регистрации (имя необязательно)
+    name: str = Field(default="", max_length=100)
     email: str
     password: str = Field(min_length=6)
 
@@ -13,6 +14,7 @@ class UserOut(BaseModel):
 
     id: int
     email: str
+    name: str
 
 
 class LoginData(BaseModel):
