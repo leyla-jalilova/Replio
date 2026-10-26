@@ -6,9 +6,28 @@ import {
 import { Calendar, Star, AlertTriangle } from 'lucide-react'
 import { getProgressData } from '../api/progress'
 
+// Сколько дней показываем на графике для каждой кнопки
+const PERIOD_DAYS = { week: 7, month: 30 }
+
+// Названия месяцев в том же виде, как их присылает сервер
+const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн',
+                'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+
 function nameFromEmail(email) {
   if (!email) return 'Пользователь'
   return email.split('@')[0]
+}
+
+// Превращает текст "21 окт" в настоящую дату, чтобы можно было сравнивать
+function parseShortDate(text) {
+  const [day, month] = text.split(' ')           // "21 окт" -> ["21", "окт"]
+  const monthIndex = MONTHS.indexOf(month)       // "окт" -> 9
+  const today = new Date()
+  const date = new Date(today.getFullYear(), monthIndex, Number(day))
+  // Если получилась дата из будущего (например, "28 дек" в январе),
+  // значит, это было в прошлом году
+  if (date > today) date.setFullYear(date.getFullYear() - 1)
+  return date
 }
 
 // Цвет плашки с оценкой
@@ -29,6 +48,7 @@ export default function Progress() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [name, setName] = useState(() => nameFromEmail(getSavedEmail()))
+  const [period, setPeriod] = useState('week') // по умолчанию неделя
 
   useEffect(() => {
     getMe()
@@ -48,6 +68,15 @@ export default function Progress() {
 
   const { stats, chartData, recentAttempts } = data
   const avgChange = averageChangeText(stats.averageChange)
+
+  // Начало периода: сегодняшняя полночь минус (дней - 1).
+  // Для недели это сегодня и 6 предыдущих дней.
+  const since = new Date()
+  since.setHours(0, 0, 0, 0)
+  since.setDate(since.getDate() - (PERIOD_DAYS[period] - 1))
+
+  // Оставляем только точки, дата которых не раньше начала периода
+  const periodData = chartData.filter((p) => parseShortDate(p.date) >= since)
 
   return (
     <div className="p-8">
@@ -113,20 +142,38 @@ export default function Progress() {
         <div className="lg:col-span-3 bg-white rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-semibold text-[#1a1a1a]">Динамика оценок</h2>
+
+            {/* Переключатель периода */}
             <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm rounded-lg bg-gray-100 text-gray-700">Неделя</button>
-              <button className="px-3 py-1 text-sm rounded-lg text-gray-500 hover:bg-gray-50">Месяц</button>
+              {[
+                ['week', 'Неделя'],
+                ['month', 'Месяц'],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setPeriod(key)}
+                  className={`px-3 py-1 text-sm rounded-lg ${
+                    period === key
+                      ? 'bg-gray-100 text-gray-700'
+                      : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="h-64">
-            {chartData.length === 0 ? (
+            {periodData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-                Пройдите первый сценарий, чтобы увидеть график
+                {chartData.length === 0
+                  ? 'Пройдите первый сценарий, чтобы увидеть график'
+                  : 'За этот период результатов нет'}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
+                <AreaChart data={periodData}>
                   <defs>
                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>

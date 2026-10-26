@@ -108,7 +108,7 @@ export default function Dialoque() {
   if (loading) return <div className="p-8 text-gray-500">Загрузка...</div>
 
   return (
-    <div className="h-screen flex gap-5 p-5">
+    <div className="h-[calc(100vh-3.5rem)] md:h-screen flex gap-5 p-5">
 
       {/* Левая часть: чат */}
       <div className="flex-1 flex flex-col min-w-0">
