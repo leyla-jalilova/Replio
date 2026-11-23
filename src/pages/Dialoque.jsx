@@ -90,8 +90,15 @@ export default function Dialoque() {
     }
   }
 
+  const handleLeave = () => {
+      // Пустой разговор оценивать нечего, уходим сразу
+      if (messages.length === 0 || window.confirm('Выйти без оценки? Этот разговор не будет засчитан.')) {
+        navigate('/scenarios')
+        }
+    }
+
   const handleFinish = async () => {
-    if (messages.length === 0) {
+    if (messages.length === 0 ) {
       setError('Сначала напишите хотя бы одно сообщение')
       setPanelOpen(false) // закрываем панель, чтобы ошибка была видна в чате
       return
@@ -156,10 +163,10 @@ export default function Dialoque() {
             {/* Кнопка открытия панели (только на узких экранах) */}
             <button
               onClick={() => setPanelOpen(true)}
-              className="lg:hidden w-10 h-10 rounded-xl bg-[#cbc6dc] flex items-center justify-center hover:bg-[#bdb7d3] transition"
-              title="Сценарий и завершение"
+              className="lg:hidden h-10 px-3 rounded-xl bg-[#cbc6dc] flex items-center gap-2 hover:bg-[#bdb7d3] transition text-sm font-medium text-purple-900"
             >
-              <Info className="w-5 h-5 text-purple-800" />
+              <Info className="w-5 h-5" />
+              Завершить
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useLocation, matchPath } from 'react-router-dom'
 import {
   Target,
   MessageCircle,
@@ -19,6 +19,15 @@ function nameFromEmail(email) {
   return email.split('@')[0]
 }
 
+// Во время диалога показываем только его: без сайдбара и кнопки ☰
+if (inChat) {
+  return (
+    <div className="h-screen bg-[#f0f0f0] overflow-hidden">
+      <Outlet />
+    </div>
+  )
+}
+
 const menuItems = [
   { to: '/progress', icon: Target, label: 'Прогресс' },
   { to: '/scenarios', icon: MessageCircle, label: 'Сценарии' },
@@ -26,6 +35,10 @@ const menuItems = [
   { to: '/library', icon: BookOpen, label: 'Библиотека' },
   { to: '/settings', icon: Settings, label: 'Настройки' },
 ]
+
+const { pathname } = useLocation()
+// true, если открыт именно сам диалог: /chat/49 (а /chat/49/review не считается)
+const inChat = !!matchPath('/chat/:id', pathname)
 
 export default function MainLayout() {
   const navigate = useNavigate()
