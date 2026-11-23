@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Clock, ArrowRight, Send } from 'lucide-react'
+import { ChevronLeft, Clock, ArrowRight, Send, Info, X } from 'lucide-react'
 import { getChat, sendMessage, finishChat } from '../api/chat'
 import { getScenarios } from '../api/scenarios'
 
@@ -27,6 +27,7 @@ export default function Dialoque() {
   const [finishing, setFinishing] = useState(false)
   const [error, setError] = useState('')
   const [seconds, setSeconds] = useState(0)
+  const [panelOpen, setPanelOpen] = useState(false) // выезжающая панель на узких экранах
   const bottomRef = useRef(null)
 
   // Загружаем разговор (если страницу обновили, переписка вернётся)
@@ -92,6 +93,7 @@ export default function Dialoque() {
   const handleFinish = async () => {
     if (messages.length === 0) {
       setError('Сначала напишите хотя бы одно сообщение')
+      setPanelOpen(false) // закрываем панель, чтобы ошибка была видна в чате
       return
     }
     try {
@@ -102,13 +104,32 @@ export default function Dialoque() {
     } catch (e) {
       setError(e.message)
       setFinishing(false)
+      setPanelOpen(false)
     }
   }
 
   if (loading) return <div className="p-8 text-gray-500">Загрузка...</div>
 
+  // Содержимое панели: одно и то же для компьютера и для выезжающего меню
+  const panel = (
+    <>
+      <button
+        onClick={handleFinish}
+        disabled={finishing || sending}
+        className="w-full flex items-center justify-between px-5 py-3.5 rounded-xl bg-[#cbc6dc] text-[#1a1a1a] font-medium hover:bg-[#bdb7d3] transition mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span>{finishing ? 'Оцениваем...' : 'Завершить разговор'}</span>
+        <ArrowRight className="w-5 h-5" />
+      </button>
+
+      <p className="text-lg text-[#1a1a1a]">Сценарий</p>
+      <h2 className="text-2xl font-bold text-[#1a1a1a] mb-2">{title}</h2>
+      <p className="text-sm text-gray-500">{description}</p>
+    </>
+  )
+
   return (
-    <div className="h-[calc(100vh-3.5rem)] md:h-screen flex gap-5 p-5">
+    <div className="h-full flex gap-5 p-5">
 
       {/* Левая часть: чат */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -122,12 +143,24 @@ export default function Dialoque() {
             <ChevronLeft className="w-5 h-5" />
             {title}
           </button>
-          <div className="flex items-center gap-2">
-            <Clock className="w-6 h-6 text-[#1a1a1a]" />
-            <div className="text-right leading-tight">
-              <p className="text-xl font-semibold text-[#1a1a1a]">{formatTimer(seconds)}</p>
-              <p className="text-xs text-gray-500">время разговора</p>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-6 h-6 text-[#1a1a1a]" />
+              <div className="text-right leading-tight">
+                <p className="text-xl font-semibold text-[#1a1a1a]">{formatTimer(seconds)}</p>
+                <p className="text-xs text-gray-500">время разговора</p>
+              </div>
             </div>
+
+            {/* Кнопка открытия панели (только на узких экранах) */}
+            <button
+              onClick={() => setPanelOpen(true)}
+              className="lg:hidden w-10 h-10 rounded-xl bg-[#cbc6dc] flex items-center justify-center hover:bg-[#bdb7d3] transition"
+              title="Сценарий и завершение"
+            >
+              <Info className="w-5 h-5 text-purple-800" />
+            </button>
           </div>
         </div>
 
@@ -178,33 +211,41 @@ export default function Dialoque() {
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             disabled={finishing}
             placeholder="Напишите сообщение..."
-            className="flex-1 outline-none text-[#1a1a1a] placeholder:text-purple-400 bg-transparent"
+            className="flex-1 min-w-0 outline-none text-[#1a1a1a] placeholder:text-purple-400 bg-transparent"
           />
           <button
             onClick={handleSend}
             disabled={!text.trim() || sending || finishing}
-            className="w-12 h-12 rounded-xl bg-[#cbc6dc] flex items-center justify-center hover:bg-[#bdb7d3] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-12 h-12 shrink-0 rounded-xl bg-[#cbc6dc] flex items-center justify-center hover:bg-[#bdb7d3] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5 text-purple-800" />
           </button>
         </div>
       </div>
 
-      {/* Правая панель */}
+      {/* Правая панель на широких экранах */}
       <aside className="w-80 bg-white rounded-3xl p-5 hidden lg:block overflow-y-auto">
-        <button
-          onClick={handleFinish}
-          disabled={finishing || sending}
-          className="w-full flex items-center justify-between px-5 py-3.5 rounded-xl bg-[#cbc6dc] text-[#1a1a1a] font-medium hover:bg-[#bdb7d3] transition mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span>{finishing ? 'Оцениваем...' : 'Завершить разговор'}</span>
-          <ArrowRight className="w-5 h-5" />
-        </button>
-
-        <p className="text-lg text-[#1a1a1a]">Сценарий</p>
-        <h2 className="text-2xl font-bold text-[#1a1a1a] mb-2">{title}</h2>
-        <p className="text-sm text-gray-500">{description}</p>
+        {panel}
       </aside>
+
+      {/* Выезжающая панель на узких экранах */}
+      {panelOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex justify-end">
+          {/* Затемнение: клик закрывает панель */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setPanelOpen(false)} />
+
+          <aside className="relative w-80 max-w-[85%] h-full bg-white p-5 overflow-y-auto">
+            <button
+              onClick={() => setPanelOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              title="Закрыть"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="mt-8">{panel}</div>
+          </aside>
+        </div>
+      )}
     </div>
   )
 }
