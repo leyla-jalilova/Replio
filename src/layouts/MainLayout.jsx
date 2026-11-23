@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Target,
   MessageCircle,
@@ -8,10 +8,11 @@ import {
   Settings,
   User,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react'
 import logo from '../assets/logo.png'
-import { getMe, getSavedEmail } from '../api/auth'
+import { getMe, getSavedEmail, logout } from '../api/auth'
 
 function nameFromEmail(email) {
   if (!email) return 'Пользователь'
@@ -27,9 +28,13 @@ const menuItems = [
 ]
 
 export default function MainLayout() {
+  const navigate = useNavigate()
   const [name, setName] = useState(() => nameFromEmail(getSavedEmail()))
   // На компьютере меню открыто сразу, на телефоне скрыто
   const [open, setOpen] = useState(() => window.innerWidth >= 768)
+  // Открыто ли маленькое меню над аватаркой (с кнопкой «Выйти»)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userRef = useRef(null)
 
   useEffect(() => {
     getMe()
@@ -39,9 +44,26 @@ export default function MainLayout() {
       .catch(() => {})
   }, [])
 
+  // Закрываем меню пользователя, если кликнули в любое другое место страницы
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userRef.current && !userRef.current.contains(e.target)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   // После выбора пункта закрываем меню только на телефоне
   const handleNavClick = () => {
     if (window.innerWidth < 768) setOpen(false)
+  }
+
+  // Выход: стираем токен и email, уходим на страницу входа
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
   }
 
   return (
@@ -96,8 +118,26 @@ export default function MainLayout() {
         </nav>
 
         {/* Пользователь внизу */}
-        <div className="p-4">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-100">
+        <div className="p-4 relative" ref={userRef}>
+
+          {/* Всплывающее меню над карточкой пользователя */}
+          {userMenuOpen && (
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 p-1">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
+              >
+                <LogOut className="w-5 h-5" />
+                Выйти
+              </button>
+            </div>
+          )}
+
+          {/* Карточка пользователя — теперь кнопка */}
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition text-left"
+          >
             <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center">
               <User className="w-5 h-5 text-gray-600" />
             </div>
@@ -105,7 +145,7 @@ export default function MainLayout() {
               <p className="text-sm font-medium text-[#1a1a1a]">{name}</p>
               <p className="text-xs text-gray-500">Руководитель</p>
             </div>
-          </div>
+          </button>
         </div>
       </aside>
 
