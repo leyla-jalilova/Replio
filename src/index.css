@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== Тёмная тема (действует внутри блока с классом .dark) ===== */
+.dark { color-scheme: dark; }
+
+/* Фоны */
+.dark.bg-\[\#f0f0f0\], .dark .bg-\[\#f0f0f0\] { background-color: #2b2b2f; }
+.dark .bg-white { background-color: #3a3a40; }
+.dark .bg-gray-50 { background-color: #44444b; }
+.dark .bg-gray-100 { background-color: #45454c; }
+.dark .bg-gray-200 { background-color: #54545b; }
+.dark .bg-gray-300 { background-color: #5f5f66; }
+.dark .hover\:bg-gray-50:hover  { background-color: #44444b; }
+.dark .hover\:bg-gray-100:hover { background-color: #45454c; }
+.dark .hover\:bg-gray-200:hover { background-color: #54545b; }
+
+/* Текст */
+.dark .text-\[\#1a1a1a\] { color: #f2f2f2; }
+.dark .text-gray-400 { color: #9a9aa2; }
+.dark .text-gray-500 { color: #b4b4bb; }
+.dark .text-gray-600 { color: #cfcfd4; }
+.dark .text-gray-700 { color: #e0e0e4; }
+.dark .text-gray-800, .dark .hover\:text-gray-800:hover { color: #ffffff; }
+
+/* Линии */
+.dark .border-gray-200, .dark .border-gray-300 { border-color: #55555c; }
+.dark .divide-gray-100 > * + *, .dark .divide-gray-200 > * + * { border-color: #4a4a50; }
+
+/* Фиолетовые кнопки и пузыри */
+.dark .bg-\[\#cbc6dc\], .dark .bg-\[\#c1bdd3\] { background-color: #4b4570; }
+.dark .hover\:bg-\[\#bdb7d3\]:hover { background-color: #5a5385; }
+.dark .bg-\[\#d9d4ea\] { background-color: #3f3a5e; }
+.dark .text-\[\#3b3366\], .dark .text-purple-700,
+.dark .text-purple-800, .dark .text-purple-900 { color: #d4cdf5; }
+.dark .bg-purple-100 { background-color: #3f3a5e; }
+.dark .text-purple-600 { color: #b9aef5; }
+
+/* Цветные плашки (оценки, разбор разговора) */
+.dark .bg-green-100, .dark .bg-emerald-50 { background-color: #1f3d33; }
+.dark .text-green-600, .dark .text-green-700 { color: #86efac; }
+.dark .bg-yellow-100, .dark .bg-amber-50 { background-color: #4a3f17; }
+.dark .text-yellow-600, .dark .text-yellow-700 { color: #fde047; }
+.dark .bg-red-100, .dark .hover\:bg-red-50:hover { background-color: #4a2222; }
+.dark .text-red-700 { color: #fca5a5; }
+
+/* График и кольцо оценки */
+.dark .recharts-cartesian-grid line { stroke: #4a4a50; }
+.dark circle[stroke="#f0f0f0"] { stroke: #4a4a50; }
+
+/* Логотип: чёрный превращаем в белый */
+.dark img[alt="Replio"] { filter: brightness(0) invert(1); }

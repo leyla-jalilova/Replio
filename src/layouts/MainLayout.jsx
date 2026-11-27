@@ -13,19 +13,11 @@ import {
 } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { getMe, getSavedEmail, logout } from '../api/auth'
+import { getTheme } from '../utils/theme'
 
 function nameFromEmail(email) {
   if (!email) return 'Пользователь'
   return email.split('@')[0]
-}
-
-// Во время диалога показываем только его: без сайдбара и кнопки ☰
-if (inChat) {
-  return (
-    <div className="h-screen bg-[#f0f0f0] overflow-hidden">
-      <Outlet />
-    </div>
-  )
 }
 
 const menuItems = [
@@ -36,12 +28,11 @@ const menuItems = [
   { to: '/settings', icon: Settings, label: 'Настройки' },
 ]
 
-const { pathname } = useLocation()
-// true, если открыт именно сам диалог: /chat/49 (а /chat/49/review не считается)
-const inChat = !!matchPath('/chat/:id', pathname)
-
 export default function MainLayout() {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  // true, если открыт именно сам диалог: /chat/49 (а /chat/49/review не считается)
+  const inChat = !!matchPath('/chat/:id', pathname)
   const [name, setName] = useState(() => nameFromEmail(getSavedEmail()))
   // На компьютере меню открыто сразу, на телефоне скрыто
   const [open, setOpen] = useState(() => window.innerWidth >= 768)
@@ -55,6 +46,14 @@ export default function MainLayout() {
         if (user?.email) setName(nameFromEmail(user.email))
       })
       .catch(() => {})
+  }, [])
+
+  const [theme, setThemeState] = useState(getTheme)
+
+  useEffect(() => {
+    const refresh = () => setThemeState(getTheme())
+    window.addEventListener('theme-change', refresh)
+    return () => window.removeEventListener('theme-change', refresh)
   }, [])
 
   // Закрываем меню пользователя, если кликнули в любое другое место страницы
@@ -79,8 +78,17 @@ export default function MainLayout() {
     navigate('/login')
   }
 
+  // Во время диалога показываем только его: без сайдбара и кнопки ☰
+  if (inChat) {
+    return (
+      <div className={`h-screen bg-[#f0f0f0] overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
+        <Outlet />
+      </div>
+    )
+  }
+
   return (
-    <div className="h-screen flex bg-[#f0f0f0] overflow-hidden">
+    <div className={`h-screen flex bg-[#f0f0f0] overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
 
       {/* Затемнение за меню (только на телефоне, когда меню открыто) */}
       {open && (

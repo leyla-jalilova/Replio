@@ -91,11 +91,11 @@ export default function Dialoque() {
   }
 
   const handleLeave = () => {
-      // Пустой разговор оценивать нечего, уходим сразу
-      if (messages.length === 0 || window.confirm('Выйти без оценки? Этот разговор не будет засчитан.')) {
-        navigate('/scenarios')
-        }
+    // Пустой разговор оценивать нечего, уходим сразу
+    if (messages.length === 0 || window.confirm('Выйти без оценки? Этот разговор не будет засчитан.')) {
+      navigate('/scenarios')
     }
+  }
 
   const handleFinish = async () => {
     if (messages.length === 0 ) {

@@ -5,6 +5,7 @@ import {
   Headset, Info, ChevronRight, ChevronDown, LogOut,
 } from 'lucide-react'
 import { getMe, getSavedEmail, logout } from '../api/auth'
+import { getTheme, setTheme } from '../utils/theme'
 
 function nameFromEmail(email) {
   if (!email) return 'Пользователь'
@@ -70,6 +71,7 @@ export default function Settings() {
   const navigate = useNavigate()
   const [email, setEmail] = useState(getSavedEmail())
   const [settings, setSettings] = useState(loadSettings)
+  const [theme, setThemeState] = useState(getTheme)
 
   useEffect(() => {
     getMe()
@@ -84,6 +86,12 @@ export default function Settings() {
     const next = { ...settings, [key]: value }
     setSettings(next)
     localStorage.setItem('settings', JSON.stringify(next))
+  }
+
+  // Переключение темы: сохраняет в localStorage и шлёт событие theme-change
+  const chooseTheme = (t) => {
+    setTheme(t)        // сохраняет + сообщает MainLayout
+    setThemeState(t)   // подсвечивает выбранную кнопку
   }
 
   const handleLogout = () => {
@@ -152,8 +160,22 @@ export default function Settings() {
 
             <Row icon={Moon} title="Тема оформления" hint="Светлая или тёмная тема">
               <div className="flex rounded-lg bg-gray-100 text-sm overflow-hidden">
-                <span className="px-4 py-2 bg-[#cbc6dc] text-purple-900 font-medium">Светлая</span>
-                <span className="px-4 py-2 text-gray-400 cursor-not-allowed" title="Скоро">Тёмная</span>
+                {[
+                  ['light', 'Светлая'],
+                  ['dark', 'Тёмная'],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => chooseTheme(key)}
+                    className={`px-4 py-2 transition ${
+                      theme === key
+                        ? 'bg-[#cbc6dc] text-purple-900 font-medium'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </Row>
 
